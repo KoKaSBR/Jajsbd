@@ -1,116 +1,68 @@
 --KoKaS BR
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
- 
- 
- local Window = Fluent:CreateWindow({
-    Title = "KoKaS BR       [ Versão Gratis ]" .. Fluent.Version,
-    TabWidth = 160, Size = UDim2.fromOffset(580, 460), Theme = "Dark"
-})
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/wall"))()
 
-local Tabs = {
-    Main = Window:AddTab({ Title = "Casa" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
-}
+local Window = Library:CreateWindow("KoKaS BR        [ Versão Grátis")
 
-local Toggle = Tabs.Main:AddToggle("MyToggle", { Title = "Auto Farm level" })
-Toggle:OnChanged(function() print(Options.MyToggle.Value) end) 
- 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
+-- Variáveis globais
+getgenv().autoFarm = true
+getgenv().autoMaestria = true
 
--- Fast Attack
-_G.FastAttack = true
+-- Auto Farm Tab
+local FarmTab = Window:CreateFolder("Auto Farm")
 
-spawn(function()
-    while _G.FastAttack do
-        pcall(function()
-            local args = {
-                [1] = "Combat",
-                [2] = true
-            }
-            ReplicatedStorage.Remotes.Combat:FireServer(unpack(args))
+FarmTab:Toggle("Ativar Auto Farm (Bandit)", function(state)
+    getgenv().autoFarm = state
+    if state then
+        spawn(function()
+            while getgenv().autoFarm do
+                for _, v in pairs(workspace.Enemies:GetChildren()) do
+                    if v.Name == "Bandit" and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
+                        local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+                        hrp.CFrame = v.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
+                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 1)
+                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 1)
+                        repeat task.wait() until v.Humanoid.Health <= 0 or not getgenv().autoFarm
+                    end
+                end
+                task.wait()
+            end
         end)
-        wait(0.1)
     end
 end)
 
--- Bring Mobs (puxa os NPCs para perto)
-_G.BringMobs = true
-
-spawn(function()
-    while _G.BringMobs do
-        for i,v in pairs(Workspace.Enemies:GetChildren()) do
-            if v:FindFirstChild("HumanoidRootPart") then
-                v.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,5)
-                v.Humanoid.WalkSpeed = 0
-                v.Humanoid.JumpPower = 0
-            end
-        end
-        wait(0.5)
-    end
+-- Maestria Tab
+FarmTab:Toggle("Auto Maestria (simples)", function(state)
+    getgenv().autoMaestria = state
 end)
 
--- ESP de Frutas
-_G.FruitESP = true
+-- Teleporte Tab
+local TeleportTab = Window:CreateFolder("Teleportes")
 
-spawn(function()
-    while _G.FruitESP do
-        for i,v in pairs(Workspace:GetChildren()) do
-            if string.find(v.Name, "Fruit") then
-                if not v:FindFirstChild("BillboardGui") then
-                    local gui = Instance.new("BillboardGui", v)
-                    gui.Size = UDim2.new(0,100,0,40)
-                    gui.AlwaysOnTop = true
-                    local txt = Instance.new("TextLabel", gui)
-                    txt.Text = v.Name
-                    txt.Size = UDim2.new(1,0,1,0)
-                    txt.BackgroundTransparency = 1
-                    txt.TextColor3 = Color3.new(1,0,0)
-                    txt.TextStrokeTransparency = 0
-                end
-            end
-        end
-        wait(2)
-    end
+TeleportTab:Button("TP Ilha Prehistoric", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-12000, 300, -7000)
 end)
 
--- Auto Teleporte para Second Sea
-_G.GoSecondSea = true
-
-spawn(function()
-    while _G.GoSecondSea do
-        if LocalPlayer.Level.Value >= 700 then
-            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("TravelSecondSea")
-            _G.GoSecondSea = false
-        end
-        wait(10)
-    end
+TeleportTab:Button("TP Mirage Island", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(5000, 200, 14000)
 end)
 
--- Auto Farm básico (ataca o inimigo mais próximo)
-_G.AutoFarm = true
+TeleportTab:Button("TP Dragon Dojo", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(3800, 100, -2900)
+end)
 
-spawn(function()
-    while _G.AutoFarm do
-        local closestEnemy = nil
-        local shortestDistance = math.huge
-        for i,v in pairs(Workspace.Enemies:GetChildren()) do
-            if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-                local distance = (v.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).magnitude
-                if distance < shortestDistance then
-                    closestEnemy = v
-                    shortestDistance = distance
-                end
-            end
-        end
+-- V4 e God Human
+local V4Tab = Window:CreateFolder("V4 & God Human")
 
-        if closestEnemy then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = closestEnemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0)
-        end
-        wait(0.2)
-    end
+V4Tab:Button("Ativar Trial V4 (beta)", function()
+    print("Trial V4 iniciado (placeholder)")
+end)
+
+V4Tab:Button("Auto God Human (futuro)", function()
+    print("Auto God Human ativado (placeholder)")
+end)
+
+-- Créditos
+local Creditos = Window:CreateFolder("Créditos")
+Creditos:Button("Script feito por ikaro ale miguel gabriel ruan", function()
+    setclipboard("https://discord.gg/bBacZyU3")
 end)
